@@ -81,7 +81,7 @@ function listenProgress(jobId) {
 
     if (job.status === "done") {
       evtSource.close();
-      showResult(job.url);
+      showResult(job.url, job.message);
     } else if (job.status === "error") {
       evtSource.close();
       showError(job.message);
@@ -113,12 +113,18 @@ function setProgress(pct, message) {
   document.getElementById("progress-message").textContent = message;
 }
 
-function showResult(url) {
+function showResult(url, summaryMessage) {
   setProgress(100, "¡Listo!");
   document.getElementById("status-badge").textContent = "Completado";
   document.getElementById("status-badge").className = "badge badge-done";
 
   document.getElementById("slides-link").href = url;
+
+  // Mostrar resumen (cuántos text boxes se crearon, advertencia si no hubo texto)
+  const summaryEl = document.getElementById("result-summary");
+  if (summaryEl && summaryMessage) {
+    summaryEl.textContent = summaryMessage;
+  }
 
   setTimeout(() => {
     hide(progressPanel);

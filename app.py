@@ -184,16 +184,35 @@ def _run_conversion(job_id: str, pdf_path: str, title: str, creds_json: str):
         update(f"Creando presentación ({total} páginas)...", 3)
         presentation_id = creator.create_presentation(title)
 
+        total_text = 0
+        total_imgs = 0
+
         for i, page_data in enumerate(processor.process_pages()):
             pct = 5 + int(i / total * 90)
-            update(f"Procesando página {i + 1} de {total}...", pct)
-            creator.add_page(presentation_id, page_data, i)
+            n_txt_found = len(page_data.text_lines)
+            update(
+                f"Página {i + 1}/{total} — procesando "
+                f"({n_txt_found} elementos de texto encontrados)...",
+                pct,
+            )
+            stats = creator.add_page(presentation_id, page_data, i)
+            total_text += stats["text_boxes"]
+            total_imgs += stats["images"]
+
+        # Armar mensaje de resumen
+        if total_text == 0:
+            text_summary = (
+                "⚠️ No se encontró texto extraíble (el PDF puede tener texto rasterizado). "
+                "El fondo visual está completo."
+            )
+        else:
+            text_summary = f"✅ {total_text} bloques de texto editables creados."
 
         url = f"https://docs.google.com/presentation/d/{presentation_id}/edit"
         jobs[job_id].update({
             "status": "done",
             "progress": 100,
-            "message": "¡Presentación lista!",
+            "message": text_summary,
             "url": url,
         })
 
