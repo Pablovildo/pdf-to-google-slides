@@ -125,11 +125,19 @@ class SlidesCreator:
             }
         }])
 
-        # 3. Agregar text boxes (capa de texto editable)
-        n_text = self._add_text_boxes(pid, slide_id, page.text_lines, pw, ph, index)
+        # 3. Agregar text boxes — fallo aquí no cancela el slide
+        try:
+            n_text = self._add_text_boxes(pid, slide_id, page.text_lines, pw, ph, index)
+        except Exception as e:
+            print(f"  [warn] texto de página {index} omitido: {e}")
+            n_text = 0
 
-        # 4. Agregar imágenes embebidas como objetos independientes
-        n_img = self._add_embedded_images(pid, slide_id, page.embedded_images, pw, ph, index)
+        # 4. Agregar imágenes embebidas — fallo aquí no cancela el slide
+        try:
+            n_img = self._add_embedded_images(pid, slide_id, page.embedded_images, pw, ph, index)
+        except Exception as e:
+            print(f"  [warn] imágenes de página {index} omitidas: {e}")
+            n_img = 0
 
         return {"text_boxes": n_text, "images": n_img}
 

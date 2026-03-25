@@ -184,9 +184,10 @@ def _run_conversion(job_id: str, pdf_path: str, title: str, creds_json: str):
         update(f"Creando presentación ({total} páginas)...", 3)
         presentation_id = creator.create_presentation(title)
 
-        total_text = 0
-        total_imgs = 0
-        ocr_pages  = 0
+        total_text   = 0
+        total_imgs   = 0
+        ocr_pages    = 0
+        failed_pages = []
 
         for i, page_data in enumerate(processor.process_pages()):
             pct = 5 + int(i / total * 90)
@@ -196,14 +197,23 @@ def _run_conversion(job_id: str, pdf_path: str, title: str, creds_json: str):
                 f"Página {i + 1}/{total}{ocr_label} — {n_txt} textos encontrados...",
                 pct,
             )
-            stats = creator.add_page(presentation_id, page_data, i)
-            total_text += stats["text_boxes"]
-            total_imgs += stats["images"]
-            if page_data.ocr_used:
-                ocr_pages += 1
+            try:
+                stats = creator.add_page(presentation_id, page_data, i)
+                total_text += stats["text_boxes"]
+                total_imgs += stats["images"]
+                if page_data.ocr_used:
+                    ocr_pages += 1
+            except Exception as page_err:
+                # Registrar el fallo pero continuar con las páginas restantes
+                failed_pages.append(i + 1)
+                print(f"  [warn] página {i + 1} omitida: {page_err}")
 
         # Armar mensaje de resumen
-        if total_text == 0:
+        warnings = ""
+        if failed_pages:
+            warnings = f" ⚠️ Páginas omitidas por error: {failed_pages}."
+
+        if total_text == 0 and not failed_pages:
             text_summary = (
                 "⚠️ No se extrajo texto. "
                 "Verificá que Tesseract OCR está instalado (ver README)."
@@ -211,10 +221,10 @@ def _run_conversion(job_id: str, pdf_path: str, title: str, creds_json: str):
         elif ocr_pages > 0:
             text_summary = (
                 f"✅ {total_text} bloques de texto creados con OCR "
-                f"({ocr_pages}/{total} páginas procesadas por OCR)."
+                f"({ocr_pages}/{total} páginas).{warnings}"
             )
         else:
-            text_summary = f"✅ {total_text} bloques de texto editables creados."
+            text_summary = f"✅ {total_text} bloques de texto editables creados.{warnings}"
 
         url = f"https://docs.google.com/presentation/d/{presentation_id}/edit"
         jobs[job_id].update({
