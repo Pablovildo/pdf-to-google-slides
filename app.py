@@ -186,24 +186,32 @@ def _run_conversion(job_id: str, pdf_path: str, title: str, creds_json: str):
 
         total_text = 0
         total_imgs = 0
+        ocr_pages  = 0
 
         for i, page_data in enumerate(processor.process_pages()):
             pct = 5 + int(i / total * 90)
-            n_txt_found = len(page_data.text_lines)
+            n_txt = len(page_data.text_lines)
+            ocr_label = " [OCR]" if page_data.ocr_used else ""
             update(
-                f"Página {i + 1}/{total} — procesando "
-                f"({n_txt_found} elementos de texto encontrados)...",
+                f"Página {i + 1}/{total}{ocr_label} — {n_txt} textos encontrados...",
                 pct,
             )
             stats = creator.add_page(presentation_id, page_data, i)
             total_text += stats["text_boxes"]
             total_imgs += stats["images"]
+            if page_data.ocr_used:
+                ocr_pages += 1
 
         # Armar mensaje de resumen
         if total_text == 0:
             text_summary = (
-                "⚠️ No se encontró texto extraíble (el PDF puede tener texto rasterizado). "
-                "El fondo visual está completo."
+                "⚠️ No se extrajo texto. "
+                "Verificá que Tesseract OCR está instalado (ver README)."
+            )
+        elif ocr_pages > 0:
+            text_summary = (
+                f"✅ {total_text} bloques de texto creados con OCR "
+                f"({ocr_pages}/{total} páginas procesadas por OCR)."
             )
         else:
             text_summary = f"✅ {total_text} bloques de texto editables creados."

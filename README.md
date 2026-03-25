@@ -59,7 +59,31 @@ Buscar y habilitar:
 
 ---
 
-## 2. Instalar dependencias
+## 2. Instalar Tesseract OCR
+
+Muchos PDFs de presentaciones tienen el texto **rasterizado** (grabado como imagen).
+La app usa Tesseract OCR para leer ese texto automáticamente.
+
+### Windows
+1. Descargar el instalador desde: https://github.com/UB-Mannheim/tesseract/wiki
+   - Elegir la versión más reciente: `tesseract-ocr-w64-setup-X.X.X.exe`
+2. Ejecutar el instalador y dejar la ruta por defecto:
+   `C:\Program Files\Tesseract-OCR\`
+3. La app lo detecta automáticamente — no se necesita configuración adicional.
+
+### macOS
+```bash
+brew install tesseract
+```
+
+### Linux
+```bash
+sudo apt install tesseract-ocr
+```
+
+---
+
+## 3. Instalar dependencias Python
 
 ```bash
 pip install -r requirements.txt
