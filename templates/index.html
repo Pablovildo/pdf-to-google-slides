@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF → Google Slides</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+
+    <!-- Header -->
+    <header>
+      <h1>PDF <span class="arrow">→</span> Google Slides</h1>
+      <p class="subtitle">Convierte presentaciones PDF en Google Slides editables</p>
+    </header>
+
+    <!-- Estado de autenticación -->
+    <div class="auth-bar">
+      {% if not has_credentials %}
+        <div class="alert alert-warning">
+          Falta el archivo <code>credentials.json</code>. Sigue las instrucciones del
+          <a href="https://github.com/tu-repo#configuracion" target="_blank">README</a>
+          para configurar Google Cloud.
+        </div>
+      {% elif not authenticated %}
+        <div class="alert alert-info">
+          Necesitas conectar tu cuenta de Google para crear presentaciones.
+          <a href="/auth" class="btn btn-primary">Conectar con Google</a>
+        </div>
+      {% else %}
+        <div class="alert alert-success">
+          Cuenta de Google conectada.
+          <a href="/auth/logout" class="btn-link">Desconectar</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Zona de upload -->
+    {% if authenticated %}
+    <div id="upload-area" class="upload-area">
+      <input type="file" id="file-input" accept=".pdf" hidden />
+      <div class="upload-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="1.5">
+          <path d="M12 16V4m0 0L8 8m4-4 4 4"/>
+          <path d="M20 16v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2"/>
+        </svg>
+      </div>
+      <p class="upload-text">Arrastra tu PDF aquí</p>
+      <p class="upload-sub">o</p>
+      <button class="btn btn-primary" onclick="document.getElementById('file-input').click()">
+        Seleccionar archivo
+      </button>
+      <p class="upload-hint">Solo archivos .pdf</p>
+    </div>
+    {% endif %}
+
+    <!-- Panel de progreso (oculto inicialmente) -->
+    <div id="progress-panel" class="progress-panel hidden">
+      <div class="file-info">
+        <span id="file-name" class="file-name"></span>
+        <span id="status-badge" class="badge badge-processing">Procesando</span>
+      </div>
+      <div class="progress-bar-container">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+      <p id="progress-message" class="progress-message">Iniciando...</p>
+    </div>
+
+    <!-- Resultado -->
+    <div id="result-panel" class="result-panel hidden">
+      <div class="result-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+      </div>
+      <h2>¡Presentación creada!</h2>
+      <p id="result-summary">Tu PDF fue convertido exitosamente a Google Slides.</p>
+      <p class="result-tip">
+        💡 Los bloques de texto editables tienen un <strong>borde punteado azul</strong>.
+        Hacé clic sobre cualquier texto para editarlo. Podés ocultar los bordes desde
+        <em>Formato → Borde y relleno → Sin borde</em>.
+      </p>
+      <div class="result-actions">
+        <a id="slides-link" href="#" target="_blank" class="btn btn-primary">
+          Abrir en Google Slides
+        </a>
+        <button class="btn btn-secondary" onclick="resetUI()">
+          Convertir otro PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div id="error-panel" class="error-panel hidden">
+      <div class="error-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M12 8v4m0 4h.01"/>
+        </svg>
+      </div>
+      <h2>Error en la conversión</h2>
+      <p id="error-message"></p>
+      <button class="btn btn-secondary" onclick="resetUI()">Intentar de nuevo</button>
+    </div>
+
+    <!-- Notas -->
+    <div class="notes">
+      <h3>¿Cómo funciona?</h3>
+      <ul>
+        <li>Cada página del PDF se convierte en un slide de Google.</li>
+        <li>El <strong>fondo visual</strong> de cada slide es una imagen del PDF original.</li>
+        <li>El <strong>texto</strong> se extrae como objetos de texto editables (transparentes sobre el fondo).</li>
+        <li>Las <strong>imágenes embebidas</strong> en el PDF se agregan como objetos independientes seleccionables.</li>
+        <li>Las imágenes temporales se guardan en tu Google Drive (carpeta raíz).</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+Flask==3.0.3
+PyMuPDF==1.24.10
+google-api-python-client==2.147.0
+google-auth-httplib2==0.2.0
+google-auth-oauthlib==1.2.1
+Pillow==10.4.0
+pytesseract==0.3.13
+numpy==1.26.4

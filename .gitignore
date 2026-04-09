@@ -1,0 +1,24 @@
+# Credenciales y tokens — NUNCA subir al repo
+credentials.json
+token.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Temporales
+*.tmp
+*.pdf
+tmp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
